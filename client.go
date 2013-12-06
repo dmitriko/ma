@@ -1,4 +1,4 @@
-// Web socket client 
+// Web socket client
 package ma
 
 import (
