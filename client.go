@@ -4,9 +4,18 @@ package ma
 import (
 	"code.google.com/p/go.net/websocket"
 	"crypto/tls"
+	"os"
+	"log"
+	"fmt"
 )
 
-func WebsocketDial(url_, origin string) (ws *websocket.Conn, err error) {
+func WebsocketDial(url_ string) (ws *websocket.Conn, err error) {
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Printf("WARN: could not get hostname %s", err)
+		hostname = "localhost"
+	}
+	origin := fmt.Sprintf("http://%s", hostname)
 	config, err := websocket.NewConfig(url_, origin)
 	if err != nil {
 		return nil, err

@@ -11,10 +11,9 @@ import (
 )
 
 var (
-	origin = "http://localhost"
 	url    = fmt.Sprintf("wss://localhost:%d%s", DefaultPort, RemoteUrlPath)
 	once   sync.Once
-	wg sync.WaitGroup
+	wg     sync.WaitGroup
 )
 
 func startServer() {
@@ -25,7 +24,7 @@ func _testWebsocketAllowed() error {
 	if !AllowedIPs["127.0.0.1"] {
 		panic("ouch")
 	}
-	ws, err := WebsocketDial(url, origin)
+	ws, err := WebsocketDial(url)
 	if err != nil {
 		return err
 	}
@@ -37,7 +36,6 @@ func _testWebsocketAllowed() error {
 	if msg != "ok" {
 		return errors.New("did't get ok from server")
 	}
-	fmt.Println("OK")
 	return nil
 }
 
@@ -60,7 +58,7 @@ func TestWebsocketAllowed(t *testing.T) {
 func TestWebsocketNotAllowed(t *testing.T) {
 	once.Do(startServer)
 	AllowedIPs["127.0.0.1"] = false
-	ws, err := WebsocketDial(url, origin)
+	ws, err := WebsocketDial(url)
 	if err != nil {
 		t.Error(err)
 	}
