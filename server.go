@@ -34,14 +34,15 @@ func isWebsocketAllowed(ws *websocket.Conn) bool {
 
 // handle websocket connection from remote host
 func remoteHandler(ws *websocket.Conn) {
+	// please note, ws will be closed after return in this func
 	log.Printf("got websocket conn from %v\n", ws.Request().RemoteAddr)
 	if !isWebsocketAllowed(ws) {
 		log.Printf("WARN: websocket from %s is not allowed", ws.Request().RemoteAddr)
-		ws.Close()
+		websocket.Message.Send(ws, NOTOK)
 		return
 	}
-	msg := "ok"
-	websocket.Message.Send(ws, msg)
+	fmt.Printf("%T", OK)
+	websocket.Message.Send(ws, OK)
 	<- closeCh
 }
 

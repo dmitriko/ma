@@ -22,7 +22,7 @@ func startServer() {
 
 func _testWebsocketAllowed() error {
 	if !AllowedIPs["127.0.0.1"] {
-		panic("ouch")
+		return errors.New("127.0.0.1 is not in AllowedIPs")
 	}
 	ws, err := WebsocketDial(url)
 	if err != nil {
@@ -33,7 +33,7 @@ func _testWebsocketAllowed() error {
 	if err != nil {
 		return err
 	}
-	if msg != "ok" {
+	if msg != OK {
 		return errors.New("did't get ok from server")
 	}
 	return nil
@@ -64,8 +64,7 @@ func TestWebsocketNotAllowed(t *testing.T) {
 	}
 	var msg string
 	err = websocket.Message.Receive(ws, &msg)
-
-	if err == nil || msg == OK {
-		t.Error("get ok from server, but should not")
+	if msg == OK {
+		t.Error("got ok from server, but should not")
 	}
 }
