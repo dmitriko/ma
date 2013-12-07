@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	url    = fmt.Sprintf("wss://localhost:%d%s", DefaultPort, RemoteUrlPath)
-	once   sync.Once
-	wg     sync.WaitGroup
+	url  = fmt.Sprintf("wss://localhost:%d%s", DefaultPort, RemoteUrlPath)
+	once sync.Once
+	wg   sync.WaitGroup
 )
 
 func startServer() {
