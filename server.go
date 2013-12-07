@@ -13,6 +13,7 @@ var (
 	//	m *martini.ClassicMartini
 	Sessions   = make(map[string]bool)
 	AllowedIPs = make(map[string]bool)
+	closeCh = make(chan int)
 )
 
 const (
@@ -24,7 +25,8 @@ func isWebsocketAllowed(ws *websocket.Conn) bool {
 	addr := ws.Request().RemoteAddr
 	t := strings.Split(addr, ":")
 	if len(t) != 2 {
-		panic(fmt.Sprintf("%s is wrong formated", addr))
+		log.Printf("ERROR: %s is wrong formated", addr)
+		return false
 	}
 	return AllowedIPs[t[0]]
 
@@ -40,6 +42,7 @@ func remoteHandler(ws *websocket.Conn) {
 	}
 	msg := "ok"
 	websocket.Message.Send(ws, msg)
+	<- closeCh
 }
 
 func StartServer(host string) {
