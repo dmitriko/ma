@@ -65,7 +65,7 @@ func TestWebsocketNotAllowed(t *testing.T) {
 	var msg string
 	err = websocket.Message.Receive(ws, &msg)
 
-	if err == nil || msg == "ok" {
+	if err == nil || msg == OK {
 		t.Error("get ok from server, but should not")
 	}
 }
