@@ -16,7 +16,10 @@ type ClusterConfig struct {
 	Name        string `yaml:"name" json:"name" toml:"name"`
 	Description string `yaml:"description" json:"description" toml:"description"`
 	Hosts       []HostConfig `yaml: "hosts" json:"hosts" toml:"hosts"`
+	Raw string `yaml:"-" json:"-" toml:"-"`
 }
+
+var clusterConfig *ClusterConfig
 
 type HostConfig struct {
 	RemoteIp string `toml:"remote_ip" yaml:"remote_ip" json:"remote_ip"`
@@ -24,7 +27,8 @@ type HostConfig struct {
 
 func NewClusterConfig(data string) (err error, config *ClusterConfig) {
 	data = strings.TrimSpace(data)
-
+	config = &ClusterConfig{Raw:data}
+	clusterConfig = config  // set global var
 	if strings.HasPrefix(data, "{") {
 		err = json.Unmarshal([]byte(data), &config)
 		if err != nil {

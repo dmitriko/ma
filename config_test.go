@@ -4,6 +4,7 @@ package ma
 
 import (
 	"testing"
+	"strings"
 )
 
 const (
@@ -44,6 +45,15 @@ func TestConfigNew(t *testing.T) {
 		if config.Hosts[0].RemoteIp != "127.0.0.1" {
 			t.Errorf("expect %s for config.Hosts[0].RemoteIp, got '%s' from %s", 
 				"127.0.0.1", config.Hosts[0].RemoteIp, data)
+			continue
+		}
+		if (clusterConfig == nil) {
+			t.Error("clusterConfig is not set")
+			println(clusterConfig)
+			continue
+		}
+		if clusterConfig.Raw != strings.TrimSpace(data) {
+			t.Error("wrong configCluster.Raw", clusterConfig.Raw)
 		}
 	}
 }
