@@ -4,10 +4,10 @@ package ma
 import (
 	"code.google.com/p/go.net/websocket"
 	"crypto/tls"
-	"os"
-	"log"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 )
 
 func WebsocketDial(url_ string) (ws *websocket.Conn, err error) {
