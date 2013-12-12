@@ -7,6 +7,7 @@ import (
 	"os"
 	"log"
 	"fmt"
+	"net/http"
 )
 
 func WebsocketDial(url_ string) (ws *websocket.Conn, err error) {
@@ -23,4 +24,11 @@ func WebsocketDial(url_ string) (ws *websocket.Conn, err error) {
 	config.TlsConfig = &tls.Config{InsecureSkipVerify: true}
 	return websocket.DialConfig(config)
 
+}
+
+func NewHttpClient() *http.Client {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	return &http.Client{Transport: tr}
 }

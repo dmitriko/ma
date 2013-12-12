@@ -17,10 +17,11 @@ var (
 )
 
 func startServer() {
-	go StartServer("127.0.0.1")
+	_, s := NewServer(&ServerConfig{})
+	go s.Start()
 }
 
-func _testWebsocketAllowed() error {
+func testWebsocketAllowed() error {
 	if !AllowedIPs["127.0.0.1"] {
 		return errors.New("127.0.0.1 is not in AllowedIPs")
 	}
@@ -45,7 +46,7 @@ func TestWebsocketAllowed(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		wg.Add(1)
 		go func() {
-			err := _testWebsocketAllowed()
+			err := testWebsocketAllowed()
 			if err != nil {
 				t.Error(err)
 			}
