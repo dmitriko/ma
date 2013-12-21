@@ -3,15 +3,12 @@ package ma
 import (
 	"code.google.com/p/go.net/websocket"
 	"fmt"
-	"github.com/codegangsta/martini"
-//	"errors"
 	"log"
 	"net/http"
 	"strings"
 )
 
 var (
-	m *martini.ClassicMartini
 	Sessions   = make(map[string]bool)
 	AllowedIPs = make(map[string]bool)
 	closeCh    = make(chan int)
@@ -67,14 +64,9 @@ func (s *Server) GetBaseUrl() (string) {
 //set defaults for server
 
 func (s *Server) Start() {
-	m = martini.Classic()
-	m.Get("/config", func() string {
-			return "foo"
-		})
 	defer func() { s.IsRunning = false }()
 	addr := fmt.Sprintf("%s:%d", s.Host, s.Port)
 	http.Handle(RemoteUrlPath, websocket.Handler(remoteHandler))
-	http.Handle("/", m)
 	log.Printf("listen on %s\n", addr)
 	err := http.ListenAndServeTLS(addr, "cert.pem", "key.pem", nil)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"time"
 )
 
 var (
@@ -19,6 +20,7 @@ var (
 func startServer() {
 	_, s := NewServer(&ServerConfig{})
 	go s.Start()
+	time.Sleep(100 * time.Millisecond)
 }
 
 func testWebsocketAllowed() error {
