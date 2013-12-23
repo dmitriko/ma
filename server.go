@@ -18,6 +18,7 @@ var (
 const (
 	RemoteUrlPath = "/remote"
 	DefaultPort   = 8000
+	ConfigUrlPath    = "/config"
 )
 
 type Server struct {
@@ -28,8 +29,8 @@ type Server struct {
 }
 
 type ServerConfig struct {
-	Host string
-	Port int
+	Host  string
+	Port  int
 	NoTls bool
 }
 
@@ -49,8 +50,8 @@ func NewServer(c *ServerConfig) (error, *Server) {
 }
 
 // return absolute url of base path, like
-// https://10.12.196.11:8080/
-func (s *Server) GetBaseUrl() (string) {
+// https://10.12.196.11:8080
+func (s *Server) GetBaseUrl() string {
 	if s.Host == "" || s.Port == 0 {
 		panic("server is not setup")
 	}
@@ -58,15 +59,18 @@ func (s *Server) GetBaseUrl() (string) {
 	if !s.IsTls {
 		proto = "http"
 	}
-	return fmt.Sprintf("%s://%s:%d/", proto, s.Host, s.Port)
+	return fmt.Sprintf("%s://%s:%d", proto, s.Host, s.Port)
 }
 
-//set defaults for server
+func ConfigHandler(rw http.ResponseWriter, req *http.Request) {
+	rw.Write([]byte(OK))
+}
 
 func (s *Server) Start() {
 	defer func() { s.IsRunning = false }()
 	addr := fmt.Sprintf("%s:%d", s.Host, s.Port)
 	http.Handle(RemoteUrlPath, websocket.Handler(remoteHandler))
+	http.HandleFunc(ConfigUrlPath, ConfigHandler)
 	log.Printf("listen on %s\n", addr)
 	err := http.ListenAndServeTLS(addr, "cert.pem", "key.pem", nil)
 	if err != nil {
@@ -74,7 +78,7 @@ func (s *Server) Start() {
 	}
 }
 
-func isWebsocketAllowed(ws *websocket.Conn) bool {
+func isAgentAllowed(ws *websocket.Conn) bool {
 	addr := ws.Request().RemoteAddr
 	t := strings.Split(addr, ":")
 	if len(t) != 2 {
@@ -89,7 +93,7 @@ func isWebsocketAllowed(ws *websocket.Conn) bool {
 func remoteHandler(ws *websocket.Conn) {
 	// please note, ws will be closed after return in this func
 	log.Printf("got websocket conn from %v\n", ws.Request().RemoteAddr)
-	if !isWebsocketAllowed(ws) {
+	if !isAgentAllowed(ws) {
 		log.Printf("WARN: websocket from %s is not allowed", ws.Request().RemoteAddr)
 		websocket.Message.Send(ws, NOTOK)
 		return
