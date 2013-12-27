@@ -6,9 +6,11 @@ import (
 	"code.google.com/p/go.net/websocket"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
+	"net/http"
 )
 
 var (
@@ -70,4 +72,28 @@ func TestWebsocketNotAllowed(t *testing.T) {
 	if msg == OK {
 		t.Error("got ok from server, but should not")
 	}
+}
+
+func TestConfigHttpGet(t *testing.T) {
+	once.Do(startServer)
+	var client = NewHttpClient()
+	url := server.GetBaseUrl() + "/config"
+	for _, accept_header := range []string{"json", "toml", "yaml"} {
+		req, _ := http.NewRequest("GET", url, nil)
+		req.Header.Add("Accept", "application/"+accept_header)
+		resp, err := client.Do(req)
+		if err != nil {
+			t.Error(err)
+		}
+		if resp.StatusCode != 200 {
+			t.Errorf("GET /config %s", resp.Status)
+		}
+		content_type := resp.Header["Content-Type"][0]
+		if !strings.Contains(content_type, "application/" + accept_header) {
+			t.Errorf("expect application/%s from GET /config, got %s", 
+				accept_header, content_type)
+		}
+
+	}
+
 }

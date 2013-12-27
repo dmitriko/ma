@@ -18,7 +18,7 @@ var (
 const (
 	RemoteUrlPath = "/remote"
 	DefaultPort   = 8000
-	ConfigUrlPath    = "/config"
+	ConfigUrlPath = "/config"
 )
 
 type Server struct {
@@ -63,6 +63,16 @@ func (s *Server) GetBaseUrl() string {
 }
 
 func ConfigHandler(rw http.ResponseWriter, req *http.Request) {
+	accept_header := req.Header["Accept"][0]
+	switch accept_header {
+	case "application/yaml":
+		rw.Header().Set("Content-Type", "application/yaml")
+	case "application/toml":
+		rw.Header().Set("Content-Type", "application/toml")
+	default:
+		rw.Header().Set("Content-Type", "application/json")
+	}
+
 	rw.Write([]byte(OK))
 }
 
