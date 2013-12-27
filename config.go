@@ -4,7 +4,7 @@ package ma
 
 import (
 	"encoding/json"
-	//	"errors"
+	"errors"
 	yaml "github.com/gonuts/yaml"
 	"strings"
 	"log"
@@ -40,6 +40,9 @@ type HostConfig struct {
 
 func NewClusterConfig(data string) (config *ClusterConfig, err error) {
 	data = strings.TrimSpace(data)
+	if len(data) == 0 {
+		return nil, errors.New("empty string is not allowed for config")
+	}
 	config = &ClusterConfig{Raw:data}
 	clusterConfig = config  // set global var
 	if strings.HasPrefix(data, "{") {

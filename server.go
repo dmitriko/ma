@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"io/ioutil"
 )
 
 var (
@@ -62,7 +63,36 @@ func (s *Server) GetBaseUrl() string {
 	return fmt.Sprintf("%s://%s:%d", proto, s.Host, s.Port)
 }
 
-func ConfigHandler(rw http.ResponseWriter, req *http.Request) {
+//extract config data sent via POST as body or a parameter
+func extractConfigValue(req *http.Request) ([]byte, error) {
+	c := req.PostFormValue("config")
+	if len(c) > 0 {
+		return []byte(c), nil
+	}
+	
+	data, err := ioutil.ReadAll(req.Body)
+	defer req.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}	
+
+func configPOST(rw http.ResponseWriter, req *http.Request) {
+	data, err := extractConfigValue(req)
+	if err == nil {
+		_, err = NewClusterConfig(string(data))
+		if err == nil {
+			rw.Write([]byte(OK))
+			return
+		}
+	}
+	log.Printf("could not handle POST to /config, got error %s", err)
+	rw.WriteHeader(400)
+
+}
+
+func configGET(rw http.ResponseWriter, req *http.Request) {
 	accept_header := req.Header["Accept"][0]
 	var d []byte
 	var e error
@@ -80,6 +110,17 @@ func ConfigHandler(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	rw.Write(d)
+
+}
+
+func ConfigHandler(rw http.ResponseWriter, req *http.Request) {
+	switch req.Method {
+	case "GET": configGET(rw, req)
+	case "POST": configPOST(rw, req)
+	default: 
+		rw.WriteHeader(400)
+		rw.Write([]byte("Not Implemented"))
+	}
 }
 
 func (s *Server) Start() {

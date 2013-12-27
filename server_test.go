@@ -12,6 +12,7 @@ import (
 	"sync"
 	"testing"
 	"time"
+	urllib "net/url"
 )
 
 var (
@@ -76,7 +77,7 @@ func TestWebsocketNotAllowed(t *testing.T) {
 }
 
 func testConfigHttpGet(accept_header, config_data string) error {
-	var client = NewHttpClient()
+	client := NewHttpClient()
 	url := server.GetBaseUrl() + "/config"
 	_, _ = NewClusterConfig(config_data)
 	req, err := http.NewRequest("GET", url, nil)
@@ -108,7 +109,7 @@ func testConfigHttpGet(accept_header, config_data string) error {
 	}
 	if len(config.Hosts) != 1 || config.Hosts[0].RemoteIp != "127.0.0.1" {
 		return errors.New(
-			fmt.Sprintf("got wrong response from /config `%s` for %s", 
+			fmt.Sprintf("got wrong response from /config `%s` for %s",
 				body, accept_header))
 	}
 	return nil
@@ -124,5 +125,36 @@ func TestConfigHttpGet(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+	}
+}
+
+func TestConfigHttpPost(t *testing.T) {
+	once.Do(startServer)
+	client := NewHttpClient()
+	url := server.GetBaseUrl() + "/config"
+	req, err := http.NewRequest("POST", url, strings.NewReader(JSON_CONFIG))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Add("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Error(err)
+	}
+	if resp.StatusCode != 200 {
+		t.Errorf("Could not POST config in reqeust body, got status %d",
+			resp.StatusCode)
+	}
+	resp, err = client.PostForm(url, urllib.Values{"config": {YAML_CONFIG}})
+	if err != nil {
+		t.Error(err)
+	}
+	if resp.StatusCode != 200 {
+		t.Errorf("Could not POST config in config POST parameter, status %d",
+			resp.StatusCode)
+	}
+	if clusterConfig.Name != "TestCluster" {
+		t.Error("cluster config is not updated")
 	}
 }
