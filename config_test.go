@@ -25,13 +25,13 @@ remote_ip = "127.0.0.1"
 name: TestCluster
 description: Test Cluster
 hosts:
-  - remote_ip: 127.0.0.1
+- remote_ip: 127.0.0.1
 `
 )
 
 func TestConfigNew(t *testing.T) {
 	for _, data := range []string{JSON_CONFIG, TOML_CONFIG, YAML_CONFIG} {
-		err, config := NewClusterConfig(data)
+		config, err := NewClusterConfig(data)
 		if err != nil {
 			t.Error(err)
 			continue

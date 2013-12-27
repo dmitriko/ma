@@ -64,16 +64,25 @@ func (s *Server) GetBaseUrl() string {
 
 func ConfigHandler(rw http.ResponseWriter, req *http.Request) {
 	accept_header := req.Header["Accept"][0]
+	var d []byte
+	var e error
 	switch accept_header {
 	case "application/yaml":
 		rw.Header().Set("Content-Type", "application/yaml")
+		d, e = clusterConfig.Yaml()
 	case "application/toml":
 		rw.Header().Set("Content-Type", "application/toml")
+		d, e = clusterConfig.Toml()
 	default:
 		rw.Header().Set("Content-Type", "application/json")
+		d, e = clusterConfig.Json()
 	}
-
-	rw.Write([]byte(OK))
+	if e != nil {
+		log.Printf("ERROR: %s", e)
+		rw.Write([]byte(""))
+		return
+	}
+	rw.Write(d)
 }
 
 func (s *Server) Start() {

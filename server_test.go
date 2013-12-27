@@ -6,11 +6,12 @@ import (
 	"code.google.com/p/go.net/websocket"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strings"
 	"sync"
 	"testing"
 	"time"
-	"net/http"
 )
 
 var (
@@ -74,26 +75,55 @@ func TestWebsocketNotAllowed(t *testing.T) {
 	}
 }
 
-func TestConfigHttpGet(t *testing.T) {
-	once.Do(startServer)
+func testConfigHttpGet(accept_header, config_data string) error {
 	var client = NewHttpClient()
 	url := server.GetBaseUrl() + "/config"
-	for _, accept_header := range []string{"json", "toml", "yaml"} {
-		req, _ := http.NewRequest("GET", url, nil)
-		req.Header.Add("Accept", "application/"+accept_header)
-		resp, err := client.Do(req)
+	_, _ = NewClusterConfig(config_data)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Accept", "application/"+accept_header)
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("GET /config %s", resp.Status))
+	}
+	content_type := resp.Header["Content-Type"][0]
+	if !strings.Contains(content_type, "application/"+accept_header) {
+		return errors.New(fmt.Sprintf(
+			"expect application/%s from GET /config, got %s",
+			accept_header, content_type))
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	config, err := NewClusterConfig(string(body))
+	if err != nil {
+		return err
+	}
+	if len(config.Hosts) != 1 || config.Hosts[0].RemoteIp != "127.0.0.1" {
+		return errors.New(
+			fmt.Sprintf("got wrong response from /config `%s` for %s", 
+				body, accept_header))
+	}
+	return nil
+}
+
+func TestConfigHttpGet(t *testing.T) {
+	once.Do(startServer)
+	m := make(map[string]string)
+	m["json"] = JSON_CONFIG
+	m["toml"] = TOML_CONFIG
+	m["yaml"] = YAML_CONFIG
+	for key, value := range m {
+		err := testConfigHttpGet(key, value)
 		if err != nil {
 			t.Error(err)
 		}
-		if resp.StatusCode != 200 {
-			t.Errorf("GET /config %s", resp.Status)
-		}
-		content_type := resp.Header["Content-Type"][0]
-		if !strings.Contains(content_type, "application/" + accept_header) {
-			t.Errorf("expect application/%s from GET /config, got %s", 
-				accept_header, content_type)
-		}
-
 	}
-
 }
