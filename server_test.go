@@ -118,7 +118,6 @@ func TestConfigHttpGet(t *testing.T) {
 	once.Do(startServer)
 	m := make(map[string]string)
 	m["json"] = JSON_CONFIG
-	m["toml"] = TOML_CONFIG
 	m["yaml"] = YAML_CONFIG
 	for key, value := range m {
 		err := testConfigHttpGet(key, value)

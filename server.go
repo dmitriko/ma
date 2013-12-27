@@ -70,9 +70,6 @@ func ConfigHandler(rw http.ResponseWriter, req *http.Request) {
 	case "application/yaml":
 		rw.Header().Set("Content-Type", "application/yaml")
 		d, e = clusterConfig.Yaml()
-	case "application/toml":
-		rw.Header().Set("Content-Type", "application/toml")
-		d, e = clusterConfig.Toml()
 	default:
 		rw.Header().Set("Content-Type", "application/json")
 		d, e = clusterConfig.Json()

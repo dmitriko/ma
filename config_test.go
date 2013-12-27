@@ -13,12 +13,6 @@ const (
 "description": "Test Cluster",
 "hosts": [{"remote_ip":"127.0.0.1"}]
 }`
-	TOML_CONFIG = `
-name = "TestCluster"
-description = "Test Cluster"
-[[hosts]]
-remote_ip = "127.0.0.1"
-`
 
 	YAML_CONFIG = `
 ---
@@ -30,7 +24,7 @@ hosts:
 )
 
 func TestConfigNew(t *testing.T) {
-	for _, data := range []string{JSON_CONFIG, TOML_CONFIG, YAML_CONFIG} {
+	for _, data := range []string{JSON_CONFIG, YAML_CONFIG} {
 		config, err := NewClusterConfig(data)
 		if err != nil {
 			t.Error(err)
